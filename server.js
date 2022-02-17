@@ -1,4 +1,5 @@
 require("dotenv").config();
+const { drawCalculator } = require("./operationsFunctions");
 const debug = require("debug")("calculator:server");
 const http = require("http");
 const url = require("url");
@@ -17,12 +18,20 @@ server.on("error", (error) => {
 
 server.on("request", (request, response) => {
     debug(`Request arrived ${request.url} with method ${request.method}`);
-    const queryParams = url.parse(request.url, true).query;
-    console.log(queryParams);
-});
+    if (request.url.startsWith("/calculator?")) {
+        const queryParams = url.parse(request.url, true).query;
 
-server.on("request", (request, response) => {
-    response.statusCode = 200;
-    response.write("Hellops");
+        if (
+            Number.isNaN(+queryParams.a) === true ||
+            Number.isNaN(+queryParams.b) === true
+        ) {
+            response.write("<h1> Try Again </h1>");
+        } else {
+            response.write(drawCalculator(queryParams.a, queryParams.b));
+        }
+    } else {
+        response.statusCode = 404;
+        response.write("<h1>Error 404</h1>");
+    }
     response.end();
 });
